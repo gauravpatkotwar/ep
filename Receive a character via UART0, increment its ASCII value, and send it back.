@@ -1,0 +1,26 @@
+#include " lpc214x .h"
+
+void setup_uart () {
+PINSEL0 = 0x05; // Enable TxD0 , RxD0
+U0LCR = 0x83; // 8-bit , 1 stop , no parity , DLAB =1
+U0DLL = 97; // Baud rate 9600
+U0DLM = 0;
+U0LCR = 0x03; // DLAB =0
+}
+
+unsigned char read_uart_char () {
+while (!( U0LSR & 0x01));
+return U0RBR ;
+}
+
+void send_uart_char ( unsigned char character ) {
+while (!( U0LSR & 0x20));
+U0THR = character ;
+}
+
+int main () {
+setup_uart ();
+while (1) {
+send_uart_char ( read_uart_char () + 1); // Echo with increment
+}
+}
