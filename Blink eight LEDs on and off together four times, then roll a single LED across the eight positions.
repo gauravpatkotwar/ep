@@ -1,0 +1,31 @@
+# include " lpc214x .h"
+
+#define FIRST_LED_PIN 12
+
+void wait_ms ( unsigned int milliseconds ) {
+for ( unsigned int i = 0; i < milliseconds ; i++)
+for ( unsigned int j = 0; j < 5000; j++);
+}
+
+int main ( void ) {
+PINSEL0 = 0; // Set pins as GPIO
+IODIR0 = 0 x000FF000 ; // LED pins as output
+while (1) {
+// Blink all LEDs
+for (int blink_count = 0; blink_count < 4; blink_count ++) {
+IOSET0 = 0 x000FF000 ; // Turn LEDs on
+wait_ms (150) ;
+IOCLR0 = 0 x000FF000 ; // Turn LEDs off
+wait_ms (150) ;
+}
+// Roll LEDs
+for (int led_index = 0; led_index < 8; led_index ++) {
+IOSET0 = 1 << ( FIRST_LED_PIN + led_index ); // Turn one
+LED on
+wait_ms (50) ;
+IOCLR0 = 1 << ( FIRST_LED_PIN + led_index ); // Turn it
+off
+wait_ms (50) ;
+}
+}
+}
