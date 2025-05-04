@@ -1,0 +1,19 @@
+# include " lpc21xx .h"
+
+void wait_ms ( unsigned int milliseconds ) {
+T0PR = 4999; // Timer prescaler
+T0MR0 = 100; // Timer match value
+T0TC = 0; // Reset timer counter
+T0TCR = 0x01; // Start timer
+while ( T0TC != T0MR0 ); // Wait until match
+T0TCR = 0x02; // Stop timer
+}
+int main ( void ) {
+IODIR0 = 0 x000FF000 ; // LED pins as output
+while (1) {
+IOSET0 = 0 x000FF000 ; // Turn LEDs on
+wait_ms (1000) ;
+IOCLR0 = 0 x000FF000 ; // Turn LEDs off
+wait_ms (1000) ;
+}
+}
