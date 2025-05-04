@@ -1,0 +1,42 @@
+# include " lpc214x .h"
+# include <stdio .h>
+
+void setup_uart () {
+PINSEL0 = 0 x00050005 ; // Enable RxD0 , TxD0 , RxD1 , TxD1
+U0LCR = 0x83; // 8-bit , 1 stop , no parity , DLAB =1
+U0DLL = 97; // Baud rate 9600
+U0DLM = 0;
+U0LCR = 0x03; // DLAB =0
+U1LCR = 0x83;
+U1DLL = 97;
+U1DLM = 0;
+U1LCR = 0x03;
+}
+unsigned char read_uart1_char () {
+while (!( U1LSR & 0x01));
+return U1RBR ;
+}
+
+void send_uart0_char ( unsigned char character ) {
+while (!( U0LSR & 0x20));
+U0THR = character ;
+}
+
+void send_uart0_string ( const char * text ) {
+while (* text ) send_uart0_char (* text ++);
+}
+
+int main () {
+unsigned char gps_data [100];
+setup_uart ();
+while (1) {
+if ( read_uart1_char () == '$') {
+int index = 0;
+do {
+gps_data [ index ] = read_uart1_char ();
+} while ( gps_data [ index ++] != '*' && index < 99);
+gps_data [ index ] = '\0 ';
+send_uart0_string ( gps_data ); // Display on terminal
+}
+}
+}
