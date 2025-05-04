@@ -1,0 +1,46 @@
+# include " lpc214x .h"
+
+unsigned int column_pins [] = {4, 5, 6, 7};
+unsigned char keypad_values [] = {'1','4','7','*",'2','5','8','0','3','6','9','#','A','B','C','D'};
+
+void wait_ms ( unsigned int milliseconds ) {
+for ( unsigned int i = 0; i < milliseconds ; i++)
+for ( unsigned int j = 0; j < 10000; j++);
+}
+
+unsigned char read_keypad ( unsigned int* pressed_key ) {
+for ( unsigned int column = 0; column < 4; column ++) {
+IOCLR0 = 1 << column_pins [ column ]; // Set column low
+wait_ms (2); // Debounce
+unsigned int row_data = IOPIN0 >> 8; // Read row pins
+wait_ms (1); // Debounce
+if (( row_data & 0xF) != 0xF) {
+for ( unsigned int row = 0; row < 4; row ++) {
+if (!( row_data & 0x01)) {
+* pressed_key = keypad_values [( column * 4) + row ];
+IOSET0 = 1 << column_pins [ column ]; // Reset column
+return 1;
+}
+row_data >>= 1;
+}
+}
+IOSET0 = 1 << column_pins [ column ]; // Reset column
+}
+return 0;
+}
+int main ( void ) {
+unsigned int key_value ;
+const char * prompt = "Key Pressed ->";
+LCD_init ();
+PINSEL0 = 0;
+IODIR0 = 0 x000FF0F0 ; // Set keypad pins
+IOSET0 = 0 x000000F0 ; // Enable row pull -ups
+while (* prompt ) LCD_data (* prompt ++);
+while (1) {
+if ( read_keypad (& key_value )) {
+LCD_cmd (0 xC0); // Move to second line
+LCD_data ( key_value );
+wait_ms (100) ;
+}
+}
+}
