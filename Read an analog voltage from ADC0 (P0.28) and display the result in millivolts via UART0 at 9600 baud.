@@ -1,0 +1,35 @@
+# include " lpc214x .h"
+# include <stdio .h>
+
+# define ADC_PIN (1 << 24)
+# define VOLTAGE_REF 3.3
+
+void setup_uart () {
+PINSEL0 = 0x05; // Enable TxD0 , RxD0
+U0LCR = 0x83; // 8-bit , 1 stop , no parity , DLAB =1
+U0DLL = 97; // Baud rate 9600
+U0DLM = 0;
+U0LCR = 0x03; // DLAB =0
+}
+
+void send_uart_char ( unsigned char character ) {
+if ( character == '\n') {
+while (!( U0LSR & 0x20));
+U0THR = 0x0D; // Carriage return
+}
+while (!( U0LSR & 0x20));
+U0THR = character ;
+}
+int main ( void ) {
+unsigned long adc_value ;
+PINSEL1 = ADC_PIN ; // Enable ADC0 on P0 .28
+setup_uart ();
+AD0CR = 0 x01210302 ; // ADC: Channel 0, 4MHz , burst , 10- bit
+while (1) {
+while (!( AD0DR1 & 0 x80000000 )); // Wait for conversion
+adc_value = ( AD0DR1 >> 6) & 0 x3FF ; // Get 10- bit result
+printf (" Voltage : %dmV\n", (int)( adc_value * VOLTAGE_REF *
+1000 / 1023) );
+for (int delay = 0; delay < 10000; delay ++); // Short delay
+}
+}
