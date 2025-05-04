@@ -1,0 +1,50 @@
+# include " lpc214x .h"
+# define REGISTER_SELECT (1 << 20)
+# define ENABLE_PIN (1 << 21)
+
+void wait_ms ( unsigned int milliseconds ) {
+for ( unsigned int i = 0; i < milliseconds ; i++)
+for ( unsigned int j = 0; j < 5000; j++);
+}
+
+void send_lcd_command ( unsigned char command ) {
+IOCLR0 = 0 x000FF000 ; // Clear data pins
+IOSET0 = command << 12; // Set command data
+IOCLR1 = REGISTER_SELECT ; // Command mode
+IOSET1 = ENABLE_PIN ; // Enable pulse
+wait_ms (100) ;
+IOCLR1 = ENABLE_PIN ;
+}
+
+void send_lcd_data ( unsigned char data ) {
+IOCLR0 = 0 x000FF000 ; // Clear data pins
+IOSET0 = data << 12; // Set data
+IOSET1 = REGISTER_SELECT ; // Data mode
+IOSET1 = ENABLE_PIN ; // Enable pulse
+wait_ms (100) ;
+IOCLR1 = ENABLE_PIN ;
+}
+
+void lcd_setup () {
+IODIR0 = 0 x000FF000 ; // Data pins as output
+IODIR1 = REGISTER_SELECT | ENABLE_PIN ; // Control pins as output
+send_lcd_command (0 x38); // 8-bit , 2- line mode
+send_lcd_command (0 x06); // Entry mode
+send_lcd_command (0 x0C); // Display on , cursor off
+send_lcd_command (0 x01); // Clear display
+send_lcd_command (0 x80); // Cursor at line 1
+}
+
+int main ( void ) {
+const char * line1_text = " SCOE ";
+const char * line2_text = "E&TC 304 B003 ";
+lcd_setup ();
+PINSEL0 = 0;
+IODIR0 = 0 x000FF0F0 ;
+IOSET0 = 0 x000000F0 ;
+send_lcd_command (0 x80); // Line 1
+while (* line1_text ) send_lcd_data (* line1_text ++);
+send_lcd_command (0 xC0); // Line 2
+while (* line2_text ) send_lcd_data (* line2_text ++);
+while (1);
+}
